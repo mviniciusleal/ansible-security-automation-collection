@@ -334,7 +334,7 @@ def processAuthentication(module):
             result = {
                 "cyberark_session": {
                     "token": token,
-                    "api_base_url": cyberark_session["api_base_url"],
+                    "api_base_url": module.params["api_base_url"],
                     "validate_certs": validate_certs,
                 }
             }
