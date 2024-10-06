@@ -312,8 +312,12 @@ def processAuthentication(module):
             # the use of shared logon authentication
             token = ""
             try:
-                token = str(json.loads(response.read()))
-
+                json_response = json.loads(response.read())                
+                if use_identity_cloud:
+                    token["token"] = "Bearer " + token["access_token"]
+                    del token["access_token"]
+                else:
+                    token = str(json_response)
                 # the new one just returns a token
                 # if use:
                 #     token = json.loads(response.read())["LogonResult"]
@@ -326,9 +330,6 @@ def processAuthentication(module):
                     headers=headers,
                     status_code=-1,
                 )
-            if use_identity_cloud:
-                token["token"] = "Bearer " + token["access_token"]
-                del token["access_token"]
             # Preparing result of the module
             result = {
                 "cyberark_session": {
