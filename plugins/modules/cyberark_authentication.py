@@ -314,8 +314,8 @@ def processAuthentication(module):
             try:
                 json_response = json.loads(response.read())                
                 if use_identity_cloud:
-                    token["token"] = "Bearer " + token["access_token"]
-                    del token["access_token"]
+                    json_response["token"] = "Bearer " + json_response["access_token"]
+                    del json_response["access_token"]
                 else:
                     token = str(json_response)
                 # the new one just returns a token
