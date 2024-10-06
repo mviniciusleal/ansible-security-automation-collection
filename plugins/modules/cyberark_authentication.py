@@ -167,6 +167,7 @@ from ansible.module_utils.urls import open_url
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils.six.moves.http_client import HTTPException
 import json
+from urllib.parse import urlencode
 
 
 def processAuthentication(module):
@@ -232,6 +233,7 @@ def processAuthentication(module):
                 "grant_type": "client_credentials"
             }
             api_base_url = identity_base_url
+            headers["Content-Type"] = "application/x-www-form-urlencoded"
         else:
             # The payload will contain username, password
             # and optionally use_radius_authentication and new_password
@@ -247,7 +249,7 @@ def processAuthentication(module):
         if concurrentSession:
             payload_dict["concurrentSession"] = True
 
-        payload = json.dumps(payload_dict)
+        payload = urlencode(payload_dict) if use_identity_cloud else json.dumps(payload_dict)
 
     else:  # Logoff Action
 
