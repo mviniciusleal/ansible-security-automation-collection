@@ -52,6 +52,10 @@ options:
             - A string containing the base URL of the server hosting
               CyberArk's Privileged Account Security Web Services SDK.
         type: str
+    identity_base_url:
+        description:
+            - A string containing the base URL of the identity cloud.
+        type: str
     validate_certs:
         type: bool
         default: 'true'
@@ -79,6 +83,12 @@ options:
         default: 'false'
         description:
             - Whether or not users will be authenticated via a RADIUS
+              server. Valid values are true/false.
+    use_identity_cloud_authentication:
+        type: bool
+        default: 'false'
+        description:
+            - Whether or not users will be authenticated via a identity cloud
               server. Valid values are true/false.
     connection_number:
         type: int
