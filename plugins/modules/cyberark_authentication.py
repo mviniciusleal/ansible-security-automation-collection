@@ -164,6 +164,7 @@ def processAuthentication(module):
     # Getting parameters from module
 
     api_base_url = module.params["api_base_url"]
+    identity_base_url = module.params["identity_base_url"]
     validate_certs = module.params["validate_certs"]
     username = module.params["username"]
     password = module.params["password"]
@@ -173,6 +174,7 @@ def processAuthentication(module):
     use_ldap = module.params["use_ldap_authentication"]
     use_windows = module.params["use_windows_authentication"]
     use_cyberark = module.params["use_cyberark_authentication"]
+    use_identity_cloud = module.params["use_identity_cloud_authentication"]    
 
     # connection_number = module.params["connection_number"]
     state = module.params["state"]
@@ -207,14 +209,23 @@ def processAuthentication(module):
 
         elif use_windows:
             end_point = "/PasswordVault/API/auth/Windows/Logon"
-
+        elif use_identity_cloud:
+            end_point = "/oauth2/platformtoken"
         else:
             use_cyberark = True
             end_point = "/PasswordVault/API/Auth/CyberArk/Logon"
 
-        # The payload will contain username, password
-        # and optionally use_radius_authentication and new_password
-        payload_dict = {"username": username, "password": password}
+        if use_identity_cloud:
+            payload_dict = {
+                "client_id": username,
+                "client_secret": password,
+                "grant_type": "client_credentials"
+            }
+            api_base_url = identity_base_url
+        else:
+            # The payload will contain username, password
+            # and optionally use_radius_authentication and new_password
+            payload_dict = {"username": username, "password": password}
 
         if new_password is not None and use_cyberark:
             payload_dict["newPassword"] = new_password
@@ -303,12 +314,14 @@ def processAuthentication(module):
                     headers=headers,
                     status_code=-1,
                 )
-
+            if use_identity_cloud:
+                token["token"] = "Bearer " + token["access_token"]
+                del token["access_token"]
             # Preparing result of the module
             result = {
                 "cyberark_session": {
                     "token": token,
-                    "api_base_url": api_base_url,
+                    "api_base_url": cyberark_session["api_base_url"],
                     "validate_certs": validate_certs,
                 }
             }
@@ -332,6 +345,7 @@ def main():
 
     fields = {
         "api_base_url": {"type": "str"},
+        "identity_base_url": {"type": "str"},
         "validate_certs": {"type": "bool", "default": "true"},
         "username": {"type": "str"},
         "password": {"type": "str", "no_log": True},
@@ -340,6 +354,7 @@ def main():
         "use_windows_authentication": {"default": False, "type": "bool"},
         "use_ldap_authentication": {"default": False, "type": "bool"},
         "use_cyberark_authentication": {"default": False, "type": "bool"},
+        "use_identity_cloud_authentication": {"default": False, "type": "bool"},
         "concurrentSession": {"default": False, "type": "bool"},
         "connection_number": {"type": "int"},
         "state": {
@@ -361,16 +376,19 @@ def main():
             "use_ldap_authentication",
             "use_cyberark_authentication",
             "use_radius_authentication",
+            "use_identity_cloud_authentication"
         ],
         ["use_radius_authentication", "new_password"],
         ["use_windows_authentication", "new_password"],
         ["use_ldap_authentication", "new_password"],
+        ["use_identity_cloud_authentication", "new_password"],
         ["api_base_url", "cyberark_session"],
     ]
 
     required_if = [
         ("state", "present", ["api_base_url"]),
         ("state", "absent", ["cyberark_session"]),
+        ("use_identity_cloud_authentication", True, ["identity_base_url"]),
     ]
 
     required_together = [["username", "password"]]
