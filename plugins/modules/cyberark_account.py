@@ -198,6 +198,11 @@ options:
                         Platform's definition.
                 aliases: [Port, ExtrPass1Name, database]
                 type: str
+    timeout:
+        description:
+            - Allows you set a timeout for when your authenticating to Cyberark
+        default: 10
+        type: int
 """
 
 EXAMPLES = """
@@ -640,6 +645,7 @@ def update_account(module, existing_account):
                         headers=headers,
                         data=json.dumps(individual_payload),
                         validate_certs=validate_certs,
+                        timeout=module.params["timeout"]
                     )
 
                     result = {"result": json.loads(response.read())}
@@ -778,6 +784,7 @@ def add_account(module):
                 headers=headers,
                 data=json.dumps(payload),
                 validate_certs=validate_certs,
+                timeout=module.params["timeout"]
             )
 
             result = {"result": json.loads(response.read())}
@@ -846,6 +853,7 @@ def delete_account(module, existing_account):
                 method=HTTPMethod,
                 headers=headers,
                 validate_certs=validate_certs,
+                timeout=module.params["timeout"]
             )
 
             result = {"result": None}
@@ -972,6 +980,7 @@ def reset_account_if_needed(module, existing_account):
                     headers=headers,
                     data=json.dumps(payload),
                     validate_certs=validate_certs,
+                    timeout=module.params["timeout"]
                 )
 
                 return (True, result, response.getcode())
@@ -1104,6 +1113,7 @@ def get_account(module):
             method="GET",
             headers=headers,
             validate_certs=validate_certs,
+            timeout=module.params["timeout"]
         )
 
         result_string = response.read()
@@ -1251,6 +1261,7 @@ def main():
             },
         },
         "platform_account_properties": {"required": False, "type": "dict"},
+        "timeout": {"default": 10, "type": "int"},
     }
 
     module = AnsibleModule(argument_spec=fields, supports_check_mode=True)
