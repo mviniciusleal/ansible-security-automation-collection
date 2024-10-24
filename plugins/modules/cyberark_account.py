@@ -402,6 +402,7 @@ ansible_specific_parameters = [
     "secret_management.new_secret",
     "management_action",
     "secret_management.perform_management_action",
+    "timeout"
 ]
 
 cyberark_fixed_properties = [
